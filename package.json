@@ -1,0 +1,37 @@
+{
+  "name": "shieldapi-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for ShieldAPI",
+  "main": "dist/index.js",
+  "bin": {
+    "shieldapi-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "shieldapi",
+    "x402"
+  ],
+  "author": "Vainplex (https://vainplex.dev)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alberthild/shieldapi-mcp"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.27.1",
+    "@x402/core": "2.5.0",
+    "@x402/evm": "2.5.0",
+    "@x402/fetch": "2.5.0",
+    "viem": "^2.17.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  },
+  "type": "module"
+}
