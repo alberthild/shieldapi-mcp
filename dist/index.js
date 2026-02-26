@@ -10,6 +10,44 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 const { SHIELDAPI_URL = 'https://shield.vainplex.dev', SHIELDAPI_WALLET_PRIVATE_KEY, } = process.env;
 const demoMode = !SHIELDAPI_WALLET_PRIVATE_KEY;
+const TOOLS = {
+    check_url: {
+        description: 'Check a URL for malware, phishing, and other threats. Uses URLhaus + heuristic analysis.',
+        param: 'url',
+        paramDesc: 'The URL to check (e.g. https://example.com)',
+        endpoint: 'check-url',
+    },
+    check_password: {
+        description: 'Check if a password hash (SHA-1) has been exposed in known data breaches via HIBP.',
+        param: 'hash',
+        paramDesc: 'SHA-1 hash of the password (40 hex chars)',
+        endpoint: 'check-password',
+    },
+    check_password_range: {
+        description: 'Look up a SHA-1 hash prefix in the HIBP k-Anonymity database.',
+        param: 'prefix',
+        paramDesc: 'First 5 characters of the SHA-1 password hash',
+        endpoint: 'check-password-range',
+    },
+    check_domain: {
+        description: 'Check domain reputation: DNS records, blacklists (Spamhaus, SpamCop, SORBS), SPF/DMARC, SSL.',
+        param: 'domain',
+        paramDesc: 'Domain name to check (e.g. example.com)',
+        endpoint: 'check-domain',
+    },
+    check_ip: {
+        description: 'Check IP reputation: blacklists, Tor exit node detection, reverse DNS.',
+        param: 'ip',
+        paramDesc: 'IPv4 address to check (e.g. 8.8.8.8)',
+        endpoint: 'check-ip',
+    },
+    check_email: {
+        description: 'Check if an email address has been exposed in known data breaches via HIBP.',
+        param: 'email',
+        paramDesc: 'Email address to check',
+        endpoint: 'check-email',
+    },
+};
 // --- x402 payment setup (lazy, only if wallet configured) ---
 let paymentFetch = fetch;
 async function initPaymentFetch() {
@@ -65,15 +103,13 @@ function formatResult(data) {
 // --- MCP Server ---
 const server = new McpServer({
     name: 'ShieldAPI',
-    version: '1.0.0',
+    version: '1.0.2',
 });
-// Tools
-server.tool('check_url', 'Check a URL for malware, phishing, and other threats. Uses URLhaus + heuristic analysis.', { url: z.string().describe('The URL to check (e.g. https://example.com)') }, async ({ url }) => formatResult(await callShieldApi('check-url', { url })));
-server.tool('check_password', 'Check if a password hash (SHA-1) has been exposed in known data breaches via HIBP.', { hash: z.string().describe('SHA-1 hash of the password (40 hex chars)') }, async ({ hash }) => formatResult(await callShieldApi('check-password', { hash })));
-server.tool('check_password_range', 'Look up a SHA-1 hash prefix in the HIBP k-Anonymity database.', { prefix: z.string().describe('First 5 characters of the SHA-1 password hash') }, async ({ prefix }) => formatResult(await callShieldApi('check-password-range', { prefix })));
-server.tool('check_domain', 'Check domain reputation: DNS records, blacklists (Spamhaus, SpamCop, SORBS), SPF/DMARC, SSL.', { domain: z.string().describe('Domain name to check (e.g. example.com)') }, async ({ domain }) => formatResult(await callShieldApi('check-domain', { domain })));
-server.tool('check_ip', 'Check IP reputation: blacklists, Tor exit node detection, reverse DNS.', { ip: z.string().describe('IPv4 address to check (e.g. 8.8.8.8)') }, async ({ ip }) => formatResult(await callShieldApi('check-ip', { ip })));
-server.tool('check_email', 'Check if an email address has been exposed in known data breaches via HIBP.', { email: z.string().describe('Email address to check') }, async ({ email }) => formatResult(await callShieldApi('check-email', { email })));
+// Register standard tools from config
+for (const [name, def] of Object.entries(TOOLS)) {
+    server.tool(name, def.description, { [def.param]: z.string().describe(def.paramDesc) }, async (params) => formatResult(await callShieldApi(def.endpoint, params)));
+}
+// full_scan is special — single 'target' param mapped to the correct server param
 server.tool('full_scan', 'Run all security checks on a target (URL, domain, IP, or email). Most comprehensive scan.', { target: z.string().describe('Target to scan — URL, domain, IP address, or email') }, async ({ target }) => formatResult(await callShieldApi('full-scan', detectTargetType(target))));
 // --- Start ---
 async function main() {
