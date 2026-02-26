@@ -1,7 +1,7 @@
 {
   "name": "shieldapi-mcp",
-  "version": "1.0.2",
-  "description": "MCP server for ShieldAPI",
+  "version": "1.0.3",
+  "description": "MCP server for ShieldAPI — URL scanning, breach detection, domain/IP reputation as AI agent tools. Pay-per-request with USDC micropayments via x402.",
   "main": "dist/index.js",
   "bin": {
     "shieldapi-mcp": "dist/index.js"
