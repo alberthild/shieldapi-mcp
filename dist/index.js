@@ -8,7 +8,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-const { SHIELDAPI_URL = 'https://shield.vainplex.dev', SHIELDAPI_WALLET_PRIVATE_KEY, SHIELDAPI_NETWORK = 'base', } = process.env;
+const { SHIELDAPI_URL = 'https://shield.vainplex.dev', SHIELDAPI_WALLET_PRIVATE_KEY, } = process.env;
 const demoMode = !SHIELDAPI_WALLET_PRIVATE_KEY;
 // --- x402 payment setup (lazy, only if wallet configured) ---
 let paymentFetch = fetch;
@@ -44,9 +44,18 @@ async function callShieldApi(endpoint, params) {
     const response = await paymentFetch(url.toString());
     if (!response.ok) {
         const body = await response.text();
-        throw new Error(`ShieldAPI ${endpoint} failed (${response.status}): ${body}`);
+        throw new Error(`ShieldAPI ${endpoint} failed (${response.status}): ${body.substring(0, 200)}`);
     }
     return response.json();
+}
+function detectTargetType(target) {
+    if (target.includes('@'))
+        return { email: target };
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(target))
+        return { ip: target };
+    if (target.startsWith('http://') || target.startsWith('https://'))
+        return { url: target };
+    return { domain: target };
 }
 function formatResult(data) {
     return {
@@ -65,7 +74,7 @@ server.tool('check_password_range', 'Look up a SHA-1 hash prefix in the HIBP k-A
 server.tool('check_domain', 'Check domain reputation: DNS records, blacklists (Spamhaus, SpamCop, SORBS), SPF/DMARC, SSL.', { domain: z.string().describe('Domain name to check (e.g. example.com)') }, async ({ domain }) => formatResult(await callShieldApi('check-domain', { domain })));
 server.tool('check_ip', 'Check IP reputation: blacklists, Tor exit node detection, reverse DNS.', { ip: z.string().describe('IPv4 address to check (e.g. 8.8.8.8)') }, async ({ ip }) => formatResult(await callShieldApi('check-ip', { ip })));
 server.tool('check_email', 'Check if an email address has been exposed in known data breaches via HIBP.', { email: z.string().describe('Email address to check') }, async ({ email }) => formatResult(await callShieldApi('check-email', { email })));
-server.tool('full_scan', 'Run all security checks on a target (URL, domain, IP, or email). Most comprehensive scan.', { target: z.string().describe('Target to scan — URL, domain, IP address, or email') }, async ({ target }) => formatResult(await callShieldApi('full-scan', { target })));
+server.tool('full_scan', 'Run all security checks on a target (URL, domain, IP, or email). Most comprehensive scan.', { target: z.string().describe('Target to scan — URL, domain, IP address, or email') }, async ({ target }) => formatResult(await callShieldApi('full-scan', detectTargetType(target))));
 // --- Start ---
 async function main() {
     await initPaymentFetch();

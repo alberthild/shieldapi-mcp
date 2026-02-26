@@ -64,7 +64,6 @@ Add to `.cursor/mcp.json`:
 |----------|---------|-------------|
 | `SHIELDAPI_URL` | `https://shield.vainplex.dev` | API base URL |
 | `SHIELDAPI_WALLET_PRIVATE_KEY` | *(none)* | EVM private key for USDC payments. If not set, uses free demo mode. |
-| `SHIELDAPI_NETWORK` | `base` | Network for payments (Base mainnet) |
 
 ## Demo Mode
 

@@ -13,7 +13,6 @@ import { z } from 'zod';
 const {
   SHIELDAPI_URL = 'https://shield.vainplex.dev',
   SHIELDAPI_WALLET_PRIVATE_KEY,
-  SHIELDAPI_NETWORK = 'base',
 } = process.env;
 
 const demoMode = !SHIELDAPI_WALLET_PRIVATE_KEY;
@@ -63,9 +62,16 @@ async function callShieldApi(endpoint: string, params: Record<string, string>): 
   const response = await paymentFetch(url.toString());
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`ShieldAPI ${endpoint} failed (${response.status}): ${body}`);
+    throw new Error(`ShieldAPI ${endpoint} failed (${response.status}): ${body.substring(0, 200)}`);
   }
   return response.json();
+}
+
+function detectTargetType(target: string): Record<string, string> {
+  if (target.includes('@')) return { email: target };
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(target)) return { ip: target };
+  if (target.startsWith('http://') || target.startsWith('https://')) return { url: target };
+  return { domain: target };
 }
 
 function formatResult(data: unknown): { content: Array<{ type: 'text'; text: string }> } {
@@ -129,7 +135,7 @@ server.tool(
   'full_scan',
   'Run all security checks on a target (URL, domain, IP, or email). Most comprehensive scan.',
   { target: z.string().describe('Target to scan — URL, domain, IP address, or email') },
-  async ({ target }) => formatResult(await callShieldApi('full-scan', { target }))
+  async ({ target }) => formatResult(await callShieldApi('full-scan', detectTargetType(target)))
 );
 
 // --- Start ---
