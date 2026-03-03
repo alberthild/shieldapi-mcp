@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * ShieldAPI MCP Server
+ * ShieldAPI MCP Server (v2.0.0 — Phase 2)
  *
  * Exposes ShieldAPI security intelligence as native MCP tools.
  * Handles x402 USDC micropayments automatically, with demo fallback.
+ *
+ * Phase 2 adds: scan_skill, check_prompt
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -64,13 +66,11 @@ async function initPaymentFetch() {
         chain: base,
         transport: http(),
     }).extend(publicActions);
-    // Type assertion needed: viem walletClient.extend(publicActions) is structurally compatible
-    // but TypeScript can't prove it due to complex generic types in viem + @x402/evm
     const signer = toClientEvmSigner(walletClient);
     const client = new x402Client().register(`eip155:${base.id}`, new ExactEvmScheme(signer));
     paymentFetch = wrapFetchWithPayment(fetch, client);
 }
-// --- API caller ---
+// --- API callers ---
 async function callShieldApi(endpoint, params) {
     const url = new URL(`${SHIELDAPI_URL}/api/${endpoint}`);
     for (const [key, value] of Object.entries(params)) {
@@ -80,6 +80,22 @@ async function callShieldApi(endpoint, params) {
         url.searchParams.set('demo', 'true');
     }
     const response = await paymentFetch(url.toString());
+    if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`ShieldAPI ${endpoint} failed (${response.status}): ${body.substring(0, 200)}`);
+    }
+    return response.json();
+}
+async function callShieldApiPost(endpoint, body) {
+    const url = new URL(`${SHIELDAPI_URL}/api/${endpoint}`);
+    if (demoMode) {
+        url.searchParams.set('demo', 'true');
+    }
+    const response = await paymentFetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
     if (!response.ok) {
         const body = await response.text();
         throw new Error(`ShieldAPI ${endpoint} failed (${response.status}): ${body.substring(0, 200)}`);
@@ -103,20 +119,49 @@ function formatResult(data) {
 // --- MCP Server ---
 const server = new McpServer({
     name: 'ShieldAPI',
-    version: '1.0.2',
+    version: '2.0.0',
 });
-// Register standard tools from config
+// Register standard GET tools from config
 for (const [name, def] of Object.entries(TOOLS)) {
     server.tool(name, def.description, { [def.param]: z.string().describe(def.paramDesc) }, async (params) => formatResult(await callShieldApi(def.endpoint, params)));
 }
-// full_scan is special — single 'target' param mapped to the correct server param
+// full_scan — single 'target' param mapped to the correct server param
 server.tool('full_scan', 'Run all security checks on a target (URL, domain, IP, or email). Most comprehensive scan.', { target: z.string().describe('Target to scan — URL, domain, IP address, or email') }, async ({ target }) => formatResult(await callShieldApi('full-scan', detectTargetType(target))));
+// ================================================================
+// Phase 2 Tools (POST endpoints)
+// ================================================================
+// scan_skill — AI skill supply chain security scanner
+server.tool('scan_skill', 'Scan an AI agent skill/plugin for security issues across 8 risk categories (Snyk ToxicSkills taxonomy). Checks for prompt injection, malicious code, suspicious downloads, credential handling, secret detection, third-party content, unverifiable dependencies, and financial access patterns. Static analysis only — no code execution. Returns risk score (0-100), severity-ranked findings with file locations, and human-readable summary.', {
+    skill: z.string().optional().describe('Raw SKILL.md content or skill name from ClawHub'),
+    files: z.array(z.object({
+        name: z.string().describe('Filename including extension'),
+        content: z.string().describe('File content as string'),
+    })).optional().describe('Additional code files to analyze (max 20 files)'),
+}, async (params) => {
+    const body = {};
+    if (params.skill)
+        body.skill = params.skill;
+    if (params.files)
+        body.files = params.files;
+    return formatResult(await callShieldApiPost('scan-skill', body));
+});
+// check_prompt — Prompt injection detection
+server.tool('check_prompt', 'Detect prompt injection in text. Analyzes across 4 categories (direct injection, encoding tricks, exfiltration, indirect injection) with 200+ detection patterns. Designed for real-time inline usage before processing untrusted user input. Returns boolean verdict, confidence score (0-1), matched patterns with evidence, and decoded content if encoding obfuscation was detected. Response time <100ms p95.', {
+    prompt: z.string().describe('The text to analyze for prompt injection'),
+    context: z.enum(['user-input', 'skill-prompt', 'system-prompt']).optional()
+        .describe('Context hint for sensitivity: user-input (default), skill-prompt (higher tolerance), system-prompt (highest sensitivity)'),
+}, async (params) => {
+    const body = { prompt: params.prompt };
+    if (params.context)
+        body.context = params.context;
+    return formatResult(await callShieldApiPost('check-prompt', body));
+});
 // --- Start ---
 async function main() {
     await initPaymentFetch();
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error(`ShieldAPI MCP server running (${demoMode ? 'DEMO mode' : 'PAID mode'})`);
+    console.error(`ShieldAPI MCP server v2.0.0 running (${demoMode ? 'DEMO mode' : 'PAID mode'})`);
 }
 main().catch((err) => {
     console.error('Fatal:', err);
