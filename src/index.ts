@@ -149,9 +149,31 @@ function formatResult(data: unknown): { content: Array<{ type: 'text'; text: str
 // --- MCP Server ---
 
 const server = new McpServer({
-  name: 'ShieldAPI',
-  version: '2.0.0',
+  name: 'shieldapi-mcp',
+  title: 'ShieldAPI — Security Intelligence for AI Agents',
+  version: '2.1.0',
+  description: '9 security tools for AI agents: breach checks, domain/IP/URL reputation, prompt injection detection, skill supply chain scanning. Pay-per-request via x402 USDC micropayments. Demo mode available.',
+  websiteUrl: 'https://shield.vainplex.dev',
+  icons: [{ src: 'https://shield.vainplex.dev/icon.svg', mimeType: 'image/svg+xml' }],
 });
+
+// Annotations for read-only lookup tools
+const readOnlyAnnotations = {
+  title: '',  // will be set per-tool
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+} as const;
+
+const TOOL_TITLES: Record<string, string> = {
+  check_url: 'Check URL Safety',
+  check_password: 'Check Password Breach',
+  check_password_range: 'Password Range Lookup',
+  check_domain: 'Check Domain Reputation',
+  check_ip: 'Check IP Reputation',
+  check_email: 'Check Email Breach',
+};
 
 // Register standard GET tools from config
 for (const [name, def] of Object.entries(TOOLS)) {
@@ -159,6 +181,7 @@ for (const [name, def] of Object.entries(TOOLS)) {
     name,
     def.description,
     { [def.param]: z.string().describe(def.paramDesc) },
+    { ...readOnlyAnnotations, title: TOOL_TITLES[name] || name },
     async (params) => formatResult(await callShieldApi(def.endpoint, params as Record<string, string>))
   );
 }
@@ -168,6 +191,7 @@ server.tool(
   'full_scan',
   'Run all security checks on a target (URL, domain, IP, or email). Most comprehensive scan.',
   { target: z.string().describe('Target to scan — URL, domain, IP address, or email') },
+  { title: 'Full Security Scan', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   async ({ target }) => formatResult(await callShieldApi('full-scan', detectTargetType(target)))
 );
 
@@ -186,6 +210,7 @@ server.tool(
       content: z.string().describe('File content as string'),
     })).optional().describe('Additional code files to analyze (max 20 files)'),
   },
+  { title: 'Scan AI Skill/Plugin', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   async (params) => {
     const body: Record<string, unknown> = {};
     if (params.skill) body.skill = params.skill;
@@ -203,6 +228,7 @@ server.tool(
     context: z.enum(['user-input', 'skill-prompt', 'system-prompt']).optional()
       .describe('Context hint for sensitivity: user-input (default), skill-prompt (higher tolerance), system-prompt (highest sensitivity)'),
   },
+  { title: 'Detect Prompt Injection', readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   async (params) => {
     const body: Record<string, unknown> = { prompt: params.prompt };
     if (params.context) body.context = params.context;
