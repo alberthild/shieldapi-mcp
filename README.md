@@ -6,7 +6,10 @@
 [![x402](https://img.shields.io/badge/x402-enabled-green.svg)](https://x402.org)
 [![Listed on x402scan](https://img.shields.io/badge/x402scan-listed-brightgreen.svg)](https://www.x402scan.com/server/55c99a38-34b3-4b2c-8987-f58ebd88a7df)
 
-Security intelligence tools for AI agents — prompt injection detection, skill security scanning, URL/domain/IP/email/password checks. Pay-per-request with USDC micropayments via [x402](https://www.x402.org/), or use free demo mode.
+Security intelligence tools for AI agents — prompt injection detection, skill security scanning, URL/domain/IP/email/password checks.
+
+**🆓 Free Tier:** 3 real API calls per endpoint per day — no wallet, no account, no API key needed.  
+**💰 Unlimited:** Pay-per-request with USDC micropayments via [x402](https://www.x402.org/) ($0.001–$0.02/call).
 
 **Now with AI-native security:** Detect prompt injection in real-time and scan AI skills for supply chain attacks.
 
@@ -16,7 +19,29 @@ Security intelligence tools for AI agents — prompt injection detection, skill 
 npx shieldapi-mcp
 ```
 
-Without a wallet configured, it runs in **demo mode** (free, limited results).
+**No wallet?** No problem — the free tier gives you 3 real API calls per endpoint per day with full results.  
+**With wallet?** Unlimited calls via x402 USDC micropayments on Base.
+
+
+## Pricing
+
+| Tier | Access | Limit |
+|------|--------|-------|
+| 🆓 **Free** | No wallet needed | 3 calls/endpoint/day (real results) |
+| 💰 **Paid** | x402 USDC on Base | Unlimited |
+
+| Endpoint | Free Calls/Day | Paid Price |
+|----------|---------------|------------|
+| check-password | 3 | $0.001 |
+| check-email | 3 | $0.005 |
+| check-domain | 3 | $0.003 |
+| check-ip | 3 | $0.002 |
+| check-url | 3 | $0.003 |
+| check-prompt | 3 | $0.005 |
+| full-scan | 1 | $0.01 |
+| scan-skill | 1 | $0.02 |
+
+Free tier responses include full results with a `_meta.tier: "free"` field and remaining call count.
 
 ## Setup for Claude Desktop
 
