@@ -1,5 +1,11 @@
 # 🛡️ ShieldAPI MCP Server
 
+[![npm version](https://img.shields.io/npm/v/shieldapi-mcp.svg)](https://www.npmjs.com/package/shieldapi-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/shieldapi-mcp.svg)](https://www.npmjs.com/package/shieldapi-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![x402](https://img.shields.io/badge/x402-enabled-green.svg)](https://x402.org)
+[![Listed on x402scan](https://img.shields.io/badge/x402scan-listed-brightgreen.svg)](https://www.x402scan.com/server/55c99a38-34b3-4b2c-8987-f58ebd88a7df)
+
 Security intelligence tools for AI agents — prompt injection detection, skill security scanning, URL/domain/IP/email/password checks. Pay-per-request with USDC micropayments via [x402](https://www.x402.org/), or use free demo mode.
 
 **Now with AI-native security:** Detect prompt injection in real-time and scan AI skills for supply chain attacks.
