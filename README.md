@@ -26,13 +26,14 @@ npx shieldapi-mcp
 ## Pricing
 
 | Tier | Access | Limit |
-|------|--------|-------|
+|:-----|:-------|:------|
 | 🆓 **Free** | No wallet needed | 3 calls/endpoint/day (real results) |
 | 💰 **Paid** | x402 USDC on Base | Unlimited |
 
 | Endpoint | Free Calls/Day | Paid Price |
-|----------|---------------|------------|
+|----------|:--------------:|:----------:|
 | check-password | 3 | $0.001 |
+| check-password-range | 3 | $0.001 |
 | check-email | 3 | $0.005 |
 | check-domain | 3 | $0.003 |
 | check-ip | 3 | $0.002 |
@@ -97,14 +98,14 @@ Add to `.cursor/mcp.json`:
 ### 🆕 AI Security Tools
 
 | Tool | Description | Price |
-|------|-------------|-------|
+|:-----|:------------|------:|
 | `check_prompt` | Detect prompt injection (208 patterns, 8 languages, 4 decoders, <100ms) | $0.005 |
 | `scan_skill` | Scan AI skills/plugins for supply chain attacks (204 patterns, 8 risk categories) | $0.02 |
 
 ### Infrastructure Security Tools
 
 | Tool | Description | Price |
-|------|-------------|-------|
+|:-----|:------------|------:|
 | `check_url` | URL safety — malware, phishing (URLhaus + heuristics) | $0.003 |
 | `check_password` | Password breach check — SHA-1 hash against 900M+ HIBP records | $0.001 |
 | `check_password_range` | HIBP k-Anonymity prefix lookup | $0.001 |
@@ -160,7 +161,7 @@ Agent: "full_scan" with target="suspicious-site.com"
 ## Environment Variables
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+|:---------|:--------|:------------|
 | `SHIELDAPI_URL` | `https://shield.vainplex.dev` | API base URL |
 | `SHIELDAPI_WALLET_PRIVATE_KEY` | *(none)* | EVM private key for USDC payments. If not set → demo mode. |
 
