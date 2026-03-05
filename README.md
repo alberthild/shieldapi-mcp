@@ -13,6 +13,10 @@ Security intelligence tools for AI agents — prompt injection detection, skill 
 
 **Now with AI-native security:** Detect prompt injection in real-time and scan AI skills for supply chain attacks.
 
+<a href="https://glama.ai/mcp/servers/@alberthild/shield-api-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@alberthild/shield-api-mcp/badge" alt="ShieldAPI MCP server" />
+</a>
+
 ## Quick Start
 
 ```bash
