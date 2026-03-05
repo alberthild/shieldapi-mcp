@@ -120,7 +120,7 @@ function formatResult(data) {
 const server = new McpServer({
     name: 'shieldapi-mcp',
     title: 'ShieldAPI — Security Intelligence for AI Agents',
-    version: '2.2.0',
+    version: '2.3.0',
     description: '9 security tools for AI agents: breach checks, domain/IP/URL reputation, prompt injection detection, skill supply chain scanning. Pay-per-request via x402 USDC micropayments. Demo mode available.',
     websiteUrl: 'https://shield.vainplex.dev',
     icons: [{ src: 'https://shield.vainplex.dev/icon.svg', mimeType: 'image/svg+xml' }],
