@@ -1,0 +1,23 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      shieldapiUrl:
+        type: string
+        default: "https://shield.vainplex.dev"
+        description: "ShieldAPI server URL. Default: https://shield.vainplex.dev"
+      walletPrivateKey:
+        type: string
+        description: "Optional: Your wallet private key for x402 USDC payments. Without this, the server runs in free/demo mode (3 calls/day per endpoint)."
+    required: []
+  commandFunction:
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {
+        SHIELDAPI_URL: config.shieldapiUrl || 'https://shield.vainplex.dev',
+        ...(config.walletPrivateKey ? { SHIELDAPI_WALLET_PRIVATE_KEY: config.walletPrivateKey } : {}),
+      }
+    })

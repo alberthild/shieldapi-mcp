@@ -151,7 +151,7 @@ function formatResult(data: unknown): { content: Array<{ type: 'text'; text: str
 const server = new McpServer({
   name: 'shieldapi-mcp',
   title: 'ShieldAPI — Security Intelligence for AI Agents',
-  version: '2.1.0',
+  version: '2.2.0',
   description: '9 security tools for AI agents: breach checks, domain/IP/URL reputation, prompt injection detection, skill supply chain scanning. Pay-per-request via x402 USDC micropayments. Demo mode available.',
   websiteUrl: 'https://shield.vainplex.dev',
   icons: [{ src: 'https://shield.vainplex.dev/icon.svg', mimeType: 'image/svg+xml' }],
@@ -234,6 +234,38 @@ server.tool(
     if (params.context) body.context = params.context;
     return formatResult(await callShieldApiPost('check-prompt', body));
   }
+);
+
+// --- Prompts (for MCP prompt capability) ---
+
+server.prompt(
+  'security_assessment',
+  'Generate a security assessment report for a target (domain, URL, IP, or email)',
+  { target: z.string().describe('Target to assess — URL, domain, IP address, or email') },
+  async ({ target }) => ({
+    messages: [{
+      role: 'user' as const,
+      content: {
+        type: 'text' as const,
+        text: `Perform a comprehensive security assessment of "${target}". Use the available ShieldAPI tools to check for:\n\n1. URL safety (if URL)\n2. Domain reputation (DNS, SPF, DMARC, SSL, blacklists)\n3. IP reputation (blacklists, Tor exit nodes)\n4. Email breach exposure (if email)\n5. Prompt injection risks (if text content)\n\nProvide a structured report with risk scores and actionable recommendations.`,
+      },
+    }],
+  })
+);
+
+server.prompt(
+  'quick_check',
+  'Quick security check — automatically detects target type and runs the right scan',
+  { input: z.string().describe('Any input: URL, domain, IP, email, or text to scan') },
+  async ({ input }) => ({
+    messages: [{
+      role: 'user' as const,
+      content: {
+        type: 'text' as const,
+        text: `Run a quick security check on: "${input}"\n\nAutomatically detect what this is (URL, domain, IP, email, or potential prompt injection) and use the appropriate ShieldAPI tool. Give me a brief risk summary.`,
+      },
+    }],
+  })
 );
 
 // --- Start ---
