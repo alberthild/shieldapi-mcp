@@ -1,0 +1,7 @@
+{
+  "name": "ShieldAPI MCP",
+  "description": "Security intelligence tools for AI agents — URL safety, prompt injection detection, email/password breach checks, domain & IP reputation, skill supply chain scanning. Free tier or pay-per-request via x402.",
+  "category": "security",
+  "homepage": "https://shield.vainplex.dev",
+  "tags": ["security", "x402", "breach-detection", "prompt-injection", "mcp"]
+}
