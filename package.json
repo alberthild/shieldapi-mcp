@@ -1,6 +1,6 @@
 {
   "name": "shieldapi-mcp",
-  "version": "2.4.1",
+  "version": "3.0.0",
   "description": "MCP server for ShieldAPI — URL scanning, breach detection, domain/IP reputation as AI agent tools. Pay-per-request with USDC micropayments via x402.",
   "main": "dist/index.js",
   "bin": {
@@ -35,6 +35,5 @@
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
   },
-  "type": "module",
-  "homepage": "https://shield.vainplex.dev"
+  "type": "module"
 }
